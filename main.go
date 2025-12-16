@@ -150,32 +150,29 @@ func editProfile(key string, config Config) {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("💡 Tip: Press Enter to keep current value. Type '-' to clear.")
 
 	fmt.Printf("Enter Name [%s]: ", profile.Name)
 	name, _ := reader.ReadString('\n')
 	name = strings.TrimSpace(name)
-	if name != "" {
-		profile.Name = name
-	}
+	if name == "-" { profile.Name = "" } else if name != "" { profile.Name = name }
 
 	fmt.Printf("Enter Email [%s]: ", profile.Email)
 	email, _ := reader.ReadString('\n')
 	email = strings.TrimSpace(email)
-	if email != "" {
-		profile.Email = email
-	}
+	if email == "-" { profile.Email = "" } else if email != "" { profile.Email = email }
 
 	fmt.Printf("Enter SSH Key Path [%s]: ", profile.SSHKey)
 	sshKey, _ := reader.ReadString('\n')
 	sshKey = strings.TrimSpace(sshKey)
-	if sshKey != "" {
-		profile.SSHKey = sshKey
-	}
+	if sshKey == "-" { profile.SSHKey = "" } else if sshKey != "" { profile.SSHKey = sshKey }
 
 	fmt.Printf("Enter Signing Key [%s]: ", profile.SigningKey)
 	signingKey, _ := reader.ReadString('\n')
 	signingKey = strings.TrimSpace(signingKey)
-	if signingKey != "" {
+	if signingKey == "-" {
+		profile.SigningKey = ""
+	} else if signingKey != "" {
 		profile.SigningKey = signingKey
 	}
 
@@ -232,7 +229,6 @@ func showStatus(config Config) {
 	fmt.Printf("  Name:  %s%s%s\n", ColorYellow, currentName, ColorReset)
 	fmt.Printf("  Email: %s%s%s\n", ColorYellow, currentEmail, ColorReset)
 
-	// Check if matches any profile
 	matchedProfile := ""
 	for key, p := range config {
 		if p.Name == currentName && p.Email == currentEmail {
@@ -264,7 +260,6 @@ func swapProfile(profileName string, config Config) {
 	setGitConfig("user.name", profile.Name)
 	setGitConfig("user.email", profile.Email)
 
-	// SSH Key Logic
 	if profile.SSHKey != "" {
 		sshCmd := fmt.Sprintf("ssh -i %s -o IdentitiesOnly=yes -F /dev/null", profile.SSHKey)
 		setGitConfig("core.sshCommand", sshCmd)
@@ -285,7 +280,7 @@ func swapProfile(profileName string, config Config) {
 		fmt.Printf("🔏 Commit Signing: Enabled (%s)\n", profile.SigningKey)
 	} else {
 		unsetGitConfig("user.signingkey")
-		unsetGitConfig("commit.gpgsign")
+		setGitConfig("commit.gpgsign", "false") 
 		unsetGitConfig("gpg.format")
 	}
 
