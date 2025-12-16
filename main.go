@@ -22,9 +22,10 @@ const (
 )
 
 type Profile struct {
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	SSHKey string `json:"ssh_key"` // Optional
+	Name       string `json:"name"`
+	Email      string `json:"email"`
+	SSHKey     string `json:"ssh_key"`     // Optional
+	SigningKey string `json:"signing_key"` // Optional (GPG/SSH Signing)
 }
 
 type Config map[string]Profile
@@ -77,7 +78,7 @@ func getConfigPath() string {
 func loadConfig() Config {
 	configPath := getConfigPath()
 	configFile, err := os.ReadFile(configPath)
-	
+
 	// If file doesn't exist, return empty config
 	if os.IsNotExist(err) {
 		return make(Config)
@@ -120,17 +121,21 @@ func addProfile(key string, config Config) {
 
 	fmt.Printf("Enter Name: ")
 	name, _ := reader.ReadString('\n')
-	
+
 	fmt.Printf("Enter Email: ")
 	email, _ := reader.ReadString('\n')
-	
+
 	fmt.Printf("Enter SSH Key Path (Optional, press Enter to skip): ")
 	sshKey, _ := reader.ReadString('\n')
 
+	fmt.Printf("Enter Signing Key (GPG Key ID or SSH Public Key) (Optional): ")
+	signingKey, _ := reader.ReadString('\n')
+
 	config[key] = Profile{
-		Name:   strings.TrimSpace(name),
-		Email:  strings.TrimSpace(email),
-		SSHKey: strings.TrimSpace(sshKey),
+		Name:       strings.TrimSpace(name),
+		Email:      strings.TrimSpace(email),
+		SSHKey:     strings.TrimSpace(sshKey),
+		SigningKey: strings.TrimSpace(signingKey),
 	}
 
 	saveConfig(config)
@@ -149,17 +154,30 @@ func editProfile(key string, config Config) {
 	fmt.Printf("Enter Name [%s]: ", profile.Name)
 	name, _ := reader.ReadString('\n')
 	name = strings.TrimSpace(name)
-	if name != "" { profile.Name = name }
+	if name != "" {
+		profile.Name = name
+	}
 
 	fmt.Printf("Enter Email [%s]: ", profile.Email)
 	email, _ := reader.ReadString('\n')
 	email = strings.TrimSpace(email)
-	if email != "" { profile.Email = email }
+	if email != "" {
+		profile.Email = email
+	}
 
 	fmt.Printf("Enter SSH Key Path [%s]: ", profile.SSHKey)
 	sshKey, _ := reader.ReadString('\n')
 	sshKey = strings.TrimSpace(sshKey)
-	if sshKey != "" { profile.SSHKey = sshKey }
+	if sshKey != "" {
+		profile.SSHKey = sshKey
+	}
+
+	fmt.Printf("Enter Signing Key [%s]: ", profile.SigningKey)
+	signingKey, _ := reader.ReadString('\n')
+	signingKey = strings.TrimSpace(signingKey)
+	if signingKey != "" {
+		profile.SigningKey = signingKey
+	}
 
 	config[key] = profile
 	saveConfig(config)
@@ -246,12 +264,29 @@ func swapProfile(profileName string, config Config) {
 	setGitConfig("user.name", profile.Name)
 	setGitConfig("user.email", profile.Email)
 
+	// SSH Key Logic
 	if profile.SSHKey != "" {
 		sshCmd := fmt.Sprintf("ssh -i %s -o IdentitiesOnly=yes -F /dev/null", profile.SSHKey)
 		setGitConfig("core.sshCommand", sshCmd)
 		fmt.Printf("🔑 SSH Key locked: %s\n", profile.SSHKey)
 	} else {
 		unsetGitConfig("core.sshCommand")
+	}
+
+	if profile.SigningKey != "" {
+		setGitConfig("user.signingkey", profile.SigningKey)
+		setGitConfig("commit.gpgsign", "true")
+
+		if strings.HasPrefix(profile.SigningKey, "ssh-") {
+			setGitConfig("gpg.format", "ssh")
+		} else {
+			unsetGitConfig("gpg.format")
+		}
+		fmt.Printf("🔏 Commit Signing: Enabled (%s)\n", profile.SigningKey)
+	} else {
+		unsetGitConfig("user.signingkey")
+		unsetGitConfig("commit.gpgsign")
+		unsetGitConfig("gpg.format")
 	}
 
 	fmt.Printf("%s✅ Swapped to: %s%s\n", ColorGreen, profileName, ColorReset)
