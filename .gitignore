@@ -1,0 +1,5 @@
+git-swap
+dist/
+.DS_Store
+.vscode/
+*.exe
