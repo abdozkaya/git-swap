@@ -247,7 +247,7 @@ func swapProfile(profileName string, config Config) {
 	setGitConfig("user.email", profile.Email)
 
 	if profile.SSHKey != "" {
-		sshCmd := fmt.Sprintf("ssh -i %s -F /dev/null", profile.SSHKey)
+		sshCmd := fmt.Sprintf("ssh -i %s -o IdentitiesOnly=yes -F /dev/null", profile.SSHKey)
 		setGitConfig("core.sshCommand", sshCmd)
 		fmt.Printf("🔑 SSH Key locked: %s\n", profile.SSHKey)
 	} else {
