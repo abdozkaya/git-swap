@@ -10,6 +10,7 @@ It handles not just `user.name` and `user.email`, but also manages project-speci
 
 * **⚡️ Instant Switch:** Change identity locally for the current repository without affecting global settings.
 * **🔑 SSH Key Management:** Automatically sets specific SSH keys for specific profiles.
+* **🔏 Commit Signing:** Supports GPG and SSH signing keys. Auto-enables signing per profile.
 * **🛠 CLI Managed:** No manual JSON editing needed. Add, edit, and remove profiles interactively.
 * **👀 Status Check:** Verify which profile is currently active in your repo.
 * **📦 Cross-Platform:** Works on macOS, Linux, and Windows.
@@ -51,7 +52,12 @@ The tool is interactive. You can add a new identity (e.g., "work") easily.
 ```bash
 git-swap add work
 ```
-*It will ask for Name, Email, and optionally an SSH Key path (e.g., `~/.ssh/id_work`).*
+It will ask for:
+- Name, 
+- Email,
+- SSH Key Path (Optional: e.g., `~/.ssh/id_work`),
+- Signing Key (Optional: GPG Key ID or SSH Public Key path for verified commits)
+
 
 ### 2. List Profiles
 See all your configured identities.
@@ -92,8 +98,13 @@ When you run `git-swap <profile>`, it executes the following git commands locall
 ```bash
 git config --local user.name "Your Name"
 git config --local user.email "email@company.com"
-# If SSH key is provided:
+
+# If SSH Key is provided:
 git config --local core.sshCommand "ssh -i /path/to/private_key -F /dev/null"
+
+# If Signing Key is provided:
+git config --local user.signingkey "key_id_or_pub_key"
+git config --local commit.gpgsign true
 ```
 This ensures your global git configuration (`~/.gitconfig`) remains untouched and clean.
 
