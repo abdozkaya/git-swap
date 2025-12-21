@@ -1,6 +1,8 @@
 # git-swap 🔄
 
-[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&pause=1000&color=FFE192&center=true&vCenter=true&width=435&lines=git-swap+add+username)](https://git.io/typing-svg)
+<p align="center">
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&pause=1000&color=FFE192&center=true&vCenter=true&width=435&lines=git-swap+add+username" alt="Typing SVG" />
+</p>
 
 > Stop committing with the wrong email! Switch Git identities instantly.
 
